@@ -13,25 +13,13 @@ jobs:
       - name: Setup Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential gcc g++ bc bison flex libssl-dev libelf-dev zlib1g-dev python3 git wget cpio
+          sudo apt-get install -y build-essential gcc g++ bc bison flex libssl-dev libelf-dev zlib1g-dev python3 git wget cpio unzip
 
-      - name: Clone Kernel Source & Toolchain
+      - name: Download Kernel Source ZIP
         run: |
-          git clone --depth=1 https://github.com/1tovgar/kernel_xiaomi_agate.git kernel_source
-          git clone --depth=1 https://github.com/chenxiaolong/Toolchain.git toolchain
-
-      - name: Start Kernel Configuration
-        run: |
-          cd kernel_source
-          echo "Memulai konfigurasi kernel Xiaomi 11T..."
-          export ARCH=arm64
-          export SUBARCH=arm64
-          export PATH="$(pwd)/../toolchain/bin:$PATH"
-          
-          # Cek compiler
-          aarch64-linux-gnu-gcc --version
-          
-          # Konfigurasi awal defconfig
-          make O=out vendor/agate_defconfig
-          echo "Konfigurasi defconfig selesai!"
+          echo "Mengunduh source code kernel via ZIP..."
+          wget -O kernel.zip https://github.com/1tovgar/kernel_xiaomi_agate/archive/refs/heads/agate-u-oss.zip
+          unzip kernel.zip
+          mv kernel_xiaomi_agate-agate-u-oss kernel_source
+          ls -la kernel_source
           
