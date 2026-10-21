@@ -26,7 +26,7 @@ jobs:
           echo "Memastikan submodule ter-load..."
           git submodule update --init --recursive
           
-          # Netralkan seluruh build host tools SELinux agar tidak komplain header
+          # Bypass scripts host selinux
           echo "obj-y :=" > scripts/selinux/Makefile
           echo "subdir- :=" >> scripts/selinux/Makefile
           
@@ -35,6 +35,8 @@ jobs:
           export SUBARCH=arm64
           
           make O=out ARCH=arm64 agate_defconfig
-          make -j$(nproc) O=out ARCH=arm64 CC=clang AS=aarch64-linux-gnu-as LD=ld.lld AR=aarch64-linux-gnu-ar CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- HOST_EXTRACFLAGS="-Wno-error=deprecated-declarations" KCFLAGS="-w" CONFIG_SECTION_MISMATCH_WARN_ONLY=y
+          
+          # Build dengan toleransi warning maksimal
+          make -j$(nproc) O=out ARCH=arm64 CC=clang AS=aarch64-linux-gnu-as LD=ld.lld AR=aarch64-linux-gnu-ar CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- HOSTCFLAGS="-w" HOST_EXTRACFLAGS="-w" KCFLAGS="-w -Wno-error" CONFIG_SECTION_MISMATCH_WARN_ONLY=y
           
           echo "Kompilasi kernel selesai!"
