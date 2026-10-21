@@ -26,9 +26,9 @@ jobs:
           echo "Memastikan submodule ter-load..."
           git submodule update --init --recursive
           
-          # Netralkan Makefile genheaders agar tidak melakukan kompilasi host selinux yang bermasalah
-          echo "hostprogs-y :=" > scripts/selinux/genheaders/Makefile
-          echo "all:" >> scripts/selinux/genheaders/Makefile
+          # Netralkan seluruh build host tools SELinux agar tidak komplain header
+          echo "obj-y :=" > scripts/selinux/Makefile
+          echo "subdir- :=" >> scripts/selinux/Makefile
           
           echo "Memulai proses kompilasi kernel Xiaomi 11T..."
           export ARCH=arm64
