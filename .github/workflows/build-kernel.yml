@@ -33,8 +33,10 @@ jobs:
           # Load defconfig
           make O=out ARCH=arm64 agate_defconfig
           
-          # Matikan genheaders SELinux di file .config hasil generate
-          sed -i 's/CONFIG_SECURITY_SELINUX_GENHEADERS=y/# CONFIG_SECURITY_SELINUX_GENHEADERS is not set/' out/.config
+          # Salin file header SELinux langsung ke folder out agar genheaders tidak crash
+          mkdir -p out/scripts/selinux/genheaders
+          cp -r security/selinux/include/classmap.h out/scripts/selinux/genheaders/ 2>/dev/null || true
+          cp -r security/selinux/include/initial_sid_to_string.h out/scripts/selinux/genheaders/ 2>/dev/null || true
           
           # Eksekusi kompilasi
           make -j$(nproc) O=out ARCH=arm64 CC=clang AS=aarch64-linux-gnu-as LD=ld.lld AR=aarch64-linux-gnu-ar CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- HOST_EXTRACFLAGS="-Wno-error=deprecated-declarations" KCFLAGS="-w" CONFIG_SECTION_MISMATCH_WARN_ONLY=y
