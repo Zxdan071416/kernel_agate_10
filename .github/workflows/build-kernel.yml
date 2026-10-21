@@ -26,6 +26,10 @@ jobs:
           echo "Memastikan submodule dan driver vendor ter-load lengkap..."
           git submodule update --init --recursive
           
+          # Buat file dummy classmap.h jika belum ada untuk mengatasi error genheaders SELinux
+          mkdir -p scripts/selinux/genheaders
+          touch scripts/selinux/genheaders/classmap.h
+          
           echo "Memulai proses kompilasi kernel Xiaomi 11T..."
           export ARCH=arm64
           export SUBARCH=arm64
