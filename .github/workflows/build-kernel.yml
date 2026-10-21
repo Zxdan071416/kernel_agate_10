@@ -10,12 +10,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Compilation Environment
+      - name: Setup Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential gcc g++ bc bison flex libssl-dev libelf-dev zlib1g-dev python3 git
+          sudo apt-get install -y build-essential gcc g++ bc bison flex libssl-dev libelf-dev zlib1g-dev python3 git wget cpio
 
-      - name: Check Kernel Version
+      - name: Clone Kernel Source & Setup Toolchain
         run: |
-          uname -a
-          make --version
+          echo "Menyiapkan direktori dan toolchain untuk kompilasi kernel Xiaomi 11T..."
+          git config --global user.name "Builder"
+          git config --global user.email "builder@action.com"
+          
