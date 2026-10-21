@@ -18,24 +18,20 @@ jobs:
       - name: Clone Kernel Source & Toolchain
         run: |
           git clone --depth=1 https://github.com/1tovgar/kernel_xiaomi_agate.git kernel_source
-          cd kernel_source
-          # Mengunduh toolchain GCC untuk kompilasi arm64
           git clone --depth=1 https://github.com/chenxiaolong/Toolchain.git toolchain
 
-      - name: Start Kernel Compilation
+      - name: Start Kernel Configuration
         run: |
           cd kernel_source
-          echo "Memulai konfigurasi dan kompilasi kernel Xiaomi 11T..."
+          echo "Memulai konfigurasi kernel Xiaomi 11T..."
           export ARCH=arm64
           export SUBARCH=arm64
-          export PATH="$(pwd)/toolchain/bin:$PATH"
+          export PATH="$(pwd)/../toolchain/bin:$PATH"
           
-          # Cek ketersediaan compiler
+          # Cek compiler
           aarch64-linux-gnu-gcc --version
           
-          # Gunakan defconfig bawaan perangkat agate
+          # Konfigurasi awal defconfig
           make O=out vendor/agate_defconfig
-          make -j$(nproc) O=out ARCH=arm64 CC=aarch64-linux-gnu-gcc
-          
-          echo "Proses kompilasi tahap awal selesai!"
+          echo "Konfigurasi defconfig selesai!"
           
