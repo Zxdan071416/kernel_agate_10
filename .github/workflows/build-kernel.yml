@@ -34,13 +34,14 @@ jobs:
           
           make O=out ARCH=arm64 agate_defconfig
           
-          # Jalankan build dan tangkap log lengkap
+          # Jalankan build dan simpan semua log
           make O=out ARCH=arm64 CC=clang AS=aarch64-linux-gnu-as LD=ld.lld AR=aarch64-linux-gnu-ar CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- HOSTCFLAGS="-w" HOST_EXTRACFLAGS="-w" KCFLAGS="-w -Wno-error" CONFIG_SECTION_MISMATCH_WARN_ONLY=y -j$(nproc) > build.log 2>&1 || true
           
-          # Tampilkan log jika output Image belum terbentuk
+          # Jika image belum terbentuk, filter dan tampilkan baris penyebab error
           if [ ! -f out/arch/arm64/boot/Image ] && [ ! -f out/arch/arm64/boot/Image.gz ]; then
-            echo "================ LOG ERROR LENGKAP ================"
-            tail -n 120 build.log
+            echo "================ DETAIL BUKTI ERROR ================"
+            grep -E -i -C 2 "error:|fatal:|failed" build.log | grep -v "Wno-error" | head -n 40
+            echo "===================================================="
             exit 1
           fi
 
