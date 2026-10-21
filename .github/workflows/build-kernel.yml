@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -13,40 +13,34 @@ jobs:
       - name: Setup Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu bc bison flex libssl-dev libelf-dev zlib1g-dev libfdt-dev libselinux1-dev python3 git wget cpio clang lld llvm
+          sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev zlib1g-dev libfdt-dev libselinux1-dev python3 git wget cpio
 
-      - name: Clone Kernel Source
+      - name: Clone Kernel Source & Toolchains
         run: |
           echo "Meng-clone source code kernel..."
           git clone --recursive https://github.com/1tovgar/kernel_xiaomi_agate.git -b agate-u-oss kernel_source
+          
+          echo "Mengunduh AOSP Clang & GCC Toolchains..."
+          git clone --depth=1 https://github.com/LineageOS/android_prebuilts_clang_kernel_linux-x86_clang-r383902 clang
+          git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 gcc64
+          git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 gcc32
 
       - name: Start Kernel Compilation
         run: |
           cd kernel_source
           git submodule update --init --recursive
           
-          # Hapus pemicu genheaders SELinux di Makefile internal agar tidak memicu host error
-          sed -i 's/scripts_basic scripts_dtc/scripts_basic/g' Makefile 2>/dev/null || true
-          echo "obj-y :=" > scripts/selinux/Makefile
-          echo "subdir- :=" >> scripts/selinux/Makefile
-          echo "hostprogs-y :=" > scripts/selinux/genheaders/Makefile
-          echo "all:" >> scripts/selinux/genheaders/Makefile
-          
           export ARCH=arm64
           export SUBARCH=arm64
+          export PATH="$GITHUB_WORKSPACE/clang/bin:$GITHUB_WORKSPACE/gcc64/bin:$GITHUB_WORKSPACE/gcc32/bin:$PATH"
           
           make O=out ARCH=arm64 agate_defconfig
           
-          # Eksekusi kompilasi dengan Clang & Cross GCC
           make -j$(nproc) O=out ARCH=arm64 \
             CC=clang \
-            CROSS_COMPILE=aarch64-linux-gnu- \
             CLANG_TRIPLE=aarch64-linux-gnu- \
-            LD=aarch64-linux-gnu-ld \
-            AR=aarch64-linux-gnu-ar \
-            HOSTCFLAGS="-w" \
-            HOST_EXTRACFLAGS="-w" \
-            KCFLAGS="-w -Wno-error" \
+            CROSS_COMPILE=aarch64-linux-android- \
+            CROSS_COMPILE_ARM32=arm-linux-androideabi- \
             CONFIG_SECTION_MISMATCH_WARN_ONLY=y
 
       - name: Upload Kernel Artifact
