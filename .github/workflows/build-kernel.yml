@@ -20,8 +20,8 @@ jobs:
           echo "Meng-clone source code kernel..."
           git clone --recursive https://github.com/1tovgar/kernel_xiaomi_agate.git -b agate-u-oss kernel_source
           
-          echo "Mengunduh Google Clang Toolchain..."
-          git clone --depth=1 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/clang-r416183b clang-toolchain
+          echo "Mengunduh Clang Toolchain dari GitHub..."
+          git clone --depth=1 https://github.com/Neutrino-Kernel/nongpl-clang clang-toolchain
 
       - name: Start Kernel Compilation
         run: |
@@ -31,7 +31,7 @@ jobs:
           export SUBARCH=arm64
           export PATH="$GITHUB_WORKSPACE/clang-toolchain/bin:$PATH"
           
-          # Konfigurasi dan build menggunakan Google Clang
+          # Konfigurasi dan build menggunakan Clang
           make O=out ARCH=arm64 agate_defconfig
           make -j$(nproc) O=out ARCH=arm64 CC=clang CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- KCFLAGS="-w" CONFIG_SECTION_MISMATCH_WARN_ONLY=y
           
