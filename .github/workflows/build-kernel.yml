@@ -27,20 +27,8 @@ jobs:
           unzip toolchain.zip
           mv Toolchain-main toolchain
 
-      - name: Start Kernel Compilation
+      - name: Find Defconfig Path
         run: |
           cd kernel_source
-          echo "Memulai proses kompilasi kernel Xiaomi 11T..."
-          export ARCH=arm64
-          export SUBARCH=arm64
-          # Mengarahkan PATH secara absolut ke folder bin toolchain
-          export PATH="$GITHUB_WORKSPACE/toolchain/bin:$PATH"
-          
-          # Cek versi compiler
-          aarch64-linux-gnu-gcc --version
-          
-          # Konfigurasi dan Build
-          make O=out vendor/agate_defconfig
-          make -j$(nproc) O=out ARCH=arm64 CC=aarch64-linux-gnu-gcc
-          
-          echo "Tahap kompilasi awal berhasil dijalankan!"
+          echo "Mencari file defconfig untuk perangkat agate..."
+          find arch/arm64/configs -name "*agate*" -o -name "*defconfig*"
