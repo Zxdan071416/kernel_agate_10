@@ -13,7 +13,7 @@ jobs:
       - name: Setup Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu bc bison flex libssl-dev libelf-dev zlib1g-dev libfdt-dev python3 git wget cpio clang lld
+          sudo apt-get install -y build-essential binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu bc bison flex libssl-dev libelf-dev zlib1g-dev libfdt-dev libselinux1-dev python3 git wget cpio clang lld
 
       - name: Clone Kernel Source
         run: |
@@ -27,7 +27,7 @@ jobs:
           export ARCH=arm64
           export SUBARCH=arm64
           
-          # Konfigurasi dan build dengan assembler cross-compiler
+          # Konfigurasi dan build dengan tambahan pustaka selinux
           make O=out ARCH=arm64 agate_defconfig
           make -j$(nproc) O=out ARCH=arm64 CC=clang AS=aarch64-linux-gnu-as LD=ld.lld AR=aarch64-linux-gnu-ar CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- HOST_EXTRACFLAGS="-Wno-error=deprecated-declarations" KCFLAGS="-w" CONFIG_SECTION_MISMATCH_WARN_ONLY=y
           
