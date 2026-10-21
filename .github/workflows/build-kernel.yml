@@ -25,17 +25,19 @@ jobs:
           cd kernel_source
           git submodule update --init --recursive
           
-          # Bypass scripts host selinux
-          echo "obj-y :=" > scripts/selinux/Makefile
-          echo "subdir- :=" >> scripts/selinux/Makefile
+          # Restore Makefile genheaders jika sempat terubah
+          git checkout scripts/selinux/genheaders/Makefile scripts/selinux/Makefile 2>/dev/null || true
           
           export ARCH=arm64
           export SUBARCH=arm64
           
           make O=out ARCH=arm64 agate_defconfig
           
-          # Jalankan kompilasi single-thread agar error langsung muncul di konsol tanpa tertimbun
-          make O=out ARCH=arm64 CC=clang AS=aarch64-linux-gnu-as LD=ld.lld AR=aarch64-linux-gnu-ar CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- HOSTCFLAGS="-w" HOST_EXTRACFLAGS="-w" KCFLAGS="-w -Wno-error" CONFIG_SECTION_MISMATCH_WARN_ONLY=y -j1
+          # Build host tools terlebih dahulu menggunakan Host GCC
+          make O=out ARCH=arm64 HOSTCC=gcc HOSTCXX=g++ HOSTCFLAGS="-O2 -I/usr/include" HOST_EXTRACFLAGS="-Wno-error=deprecated-declarations" prepare scripts
+          
+          # Lanjutkan kompilasi kernel utama dengan Clang
+          make O=out ARCH=arm64 CC=clang AS=aarch64-linux-gnu-as LD=ld.lld AR=aarch64-linux-gnu-ar CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- HOSTCC=gcc KCFLAGS="-w -Wno-error" CONFIG_SECTION_MISMATCH_WARN_ONLY=y -j$(nproc)
 
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
