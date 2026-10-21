@@ -25,7 +25,8 @@ jobs:
           cd kernel_source
           git submodule update --init --recursive
           
-          # Netralkan Makefile SELinux host tools
+          # Hapus pemicu genheaders SELinux di Makefile internal agar tidak memicu host error
+          sed -i 's/scripts_basic scripts_dtc/scripts_basic/g' Makefile 2>/dev/null || true
           echo "obj-y :=" > scripts/selinux/Makefile
           echo "subdir- :=" >> scripts/selinux/Makefile
           echo "hostprogs-y :=" > scripts/selinux/genheaders/Makefile
@@ -36,16 +37,13 @@ jobs:
           
           make O=out ARCH=arm64 agate_defconfig
           
-          # Paksa gunakan GNU linker (aarch64-linux-gnu-ld) untuk tahap linking akhir
+          # Eksekusi kompilasi dengan Clang & Cross GCC
           make -j$(nproc) O=out ARCH=arm64 \
             CC=clang \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CLANG_TRIPLE=aarch64-linux-gnu- \
             LD=aarch64-linux-gnu-ld \
             AR=aarch64-linux-gnu-ar \
-            OBJCOPY=aarch64-linux-gnu-objcopy \
-            OBJDUMP=aarch64-linux-gnu-objdump \
-            STRIP=aarch64-linux-gnu-strip \
             HOSTCFLAGS="-w" \
             HOST_EXTRACFLAGS="-w" \
             KCFLAGS="-w -Wno-error" \
