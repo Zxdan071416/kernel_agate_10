@@ -34,13 +34,13 @@ jobs:
           
           make O=out ARCH=arm64 agate_defconfig
           
-          # Tangkap log kompilasi ke build.log untuk analisa error presisi
-          make O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 CROSS_COMPILE=aarch64-linux-gnu- HOSTCFLAGS="-w" HOST_EXTRACFLAGS="-w" KCFLAGS="-w -Wno-error" CONFIG_SECTION_MISMATCH_WARN_ONLY=y -j$(nproc) 2>&1 | tee build.log || true
+          # Jalankan build dan tangkap log lengkap
+          make O=out ARCH=arm64 CC=clang AS=aarch64-linux-gnu-as LD=ld.lld AR=aarch64-linux-gnu-ar CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- HOSTCFLAGS="-w" HOST_EXTRACFLAGS="-w" KCFLAGS="-w -Wno-error" CONFIG_SECTION_MISMATCH_WARN_ONLY=y -j$(nproc) > build.log 2>&1 || true
           
-          # Jika gagal, tampilkan 50 baris yang mengandung keyword error
+          # Tampilkan log jika output Image belum terbentuk
           if [ ! -f out/arch/arm64/boot/Image ] && [ ! -f out/arch/arm64/boot/Image.gz ]; then
-            echo "================ ERROR DETECTED ================"
-            grep -i -C 3 "error:" build.log | tail -n 50
+            echo "================ LOG ERROR LENGKAP ================"
+            tail -n 120 build.log
             exit 1
           fi
 
