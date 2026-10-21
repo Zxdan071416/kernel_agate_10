@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -15,12 +15,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev zlib1g-dev libfdt-dev libselinux1-dev python3 git wget cpio
 
-      - name: Clone Kernel Source & Toolchains
+      - name: Clone Kernel Source & AOSP Toolchains
         run: |
           echo "Meng-clone source code kernel..."
           git clone --recursive https://github.com/1tovgar/kernel_xiaomi_agate.git -b agate-u-oss kernel_source
           
-          echo "Mengunduh AOSP Clang & GCC Toolchains..."
+          echo "Mengunduh Toolchain Resmi AOSP Clang & GCC..."
           git clone --depth=1 https://github.com/LineageOS/android_prebuilts_clang_kernel_linux-x86_clang-r383902 clang
           git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 gcc64
           git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 gcc32
@@ -32,15 +32,21 @@ jobs:
           
           export ARCH=arm64
           export SUBARCH=arm64
+          
+          # Path toolchain AOSP
           export PATH="$GITHUB_WORKSPACE/clang/bin:$GITHUB_WORKSPACE/gcc64/bin:$GITHUB_WORKSPACE/gcc32/bin:$PATH"
           
           make O=out ARCH=arm64 agate_defconfig
           
+          # Kompilasi dengan Clang AOSP + Cross GCC
           make -j$(nproc) O=out ARCH=arm64 \
             CC=clang \
             CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=aarch64-linux-android- \
             CROSS_COMPILE_ARM32=arm-linux-androideabi- \
+            HOSTCFLAGS="-w" \
+            HOST_EXTRACFLAGS="-w" \
+            KCFLAGS="-w -Wno-error" \
             CONFIG_SECTION_MISMATCH_WARN_ONLY=y
 
       - name: Upload Kernel Artifact
