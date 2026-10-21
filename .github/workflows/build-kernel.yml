@@ -23,14 +23,13 @@ jobs:
       - name: Start Kernel Compilation
         run: |
           cd kernel_source
+          echo "Memastikan submodule dan driver vendor ter-load lengkap..."
+          git submodule update --init --recursive
+          
           echo "Memulai proses kompilasi kernel Xiaomi 11T..."
           export ARCH=arm64
           export SUBARCH=arm64
           
-          # Bersihkan skrip host lama agar ter-generate ulang dengan benar
-          make O=out clean
-          
-          # Konfigurasi dan build
           make O=out ARCH=arm64 agate_defconfig
           make -j$(nproc) O=out ARCH=arm64 CC=clang AS=aarch64-linux-gnu-as LD=ld.lld AR=aarch64-linux-gnu-ar CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- HOST_EXTRACFLAGS="-Wno-error=deprecated-declarations" KCFLAGS="-w" CONFIG_SECTION_MISMATCH_WARN_ONLY=y
           
