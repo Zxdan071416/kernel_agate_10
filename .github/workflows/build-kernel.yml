@@ -21,9 +21,9 @@ jobs:
           git clone --recursive https://github.com/1tovgar/kernel_xiaomi_agate.git -b agate-u-oss kernel_source
           
           echo "Mengunduh Clang Toolchain ZIP..."
-          wget -O clang.zip https://github.com/Neutrino-Kernel/nongpl-clang/archive/refs/heads/main.zip
+          wget -O clang.zip https://github.com/Neutrino-Kernel/nongpl-clang/archive/refs/heads/master.zip
           unzip -q clang.zip
-          mv nongpl-clang-main clang-toolchain
+          mv nongpl-clang-master clang-toolchain
 
       - name: Start Kernel Compilation
         run: |
