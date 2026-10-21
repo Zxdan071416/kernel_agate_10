@@ -13,7 +13,7 @@ jobs:
       - name: Setup Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev zlib1g-dev libfdt-dev libselinux1-dev python3 git wget cpio clang lld llvm
+          sudo apt-get install -y build-essential binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu bc bison flex libssl-dev libelf-dev zlib1g-dev libfdt-dev libselinux1-dev python3 git wget cpio clang lld llvm
 
       - name: Clone Kernel Source
         run: |
@@ -23,31 +23,29 @@ jobs:
       - name: Start Kernel Compilation
         run: |
           cd kernel_source
-          echo "Memastikan submodule ter-load..."
           git submodule update --init --recursive
           
-          # Bypass scripts host selinux yang bermasalah
+          # Bypass scripts host selinux
           echo "obj-y :=" > scripts/selinux/Makefile
           echo "subdir- :=" >> scripts/selinux/Makefile
           
-          echo "Memulai proses kompilasi kernel Xiaomi 11T..."
           export ARCH=arm64
           export SUBARCH=arm64
           
           make O=out ARCH=arm64 agate_defconfig
           
-          # Gunakan bundel LLVM=1 standar Google/Android
-          make O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 CROSS_COMPILE=aarch64-linux-gnu- HOSTCFLAGS="-w" HOST_EXTRACFLAGS="-w" KCFLAGS="-w -Wno-error" CONFIG_SECTION_MISMATCH_WARN_ONLY=y -j$(nproc)
+          # Tangkap log kompilasi ke build.log untuk analisa error presisi
+          make O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 CROSS_COMPILE=aarch64-linux-gnu- HOSTCFLAGS="-w" HOST_EXTRACFLAGS="-w" KCFLAGS="-w -Wno-error" CONFIG_SECTION_MISMATCH_WARN_ONLY=y -j$(nproc) 2>&1 | tee build.log || true
           
-          echo "Kompilasi kernel selesai!"
-
-      - name: Check Output Kernel
-        run: |
-          cd kernel_source/out/arch/arm64/boot
-          ls -la
+          # Jika gagal, tampilkan 50 baris yang mengandung keyword error
+          if [ ! -f out/arch/arm64/boot/Image ] && [ ! -f out/arch/arm64/boot/Image.gz ]; then
+            echo "================ ERROR DETECTED ================"
+            grep -i -C 3 "error:" build.log | tail -n 50
+            exit 1
+          fi
 
       - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Image.gz-dtb-agate
+          name: Image-agate
           path: kernel_source/out/arch/arm64/boot/Image*
