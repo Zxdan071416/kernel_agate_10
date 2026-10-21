@@ -15,11 +15,29 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential gcc g++ bc bison flex libssl-dev libelf-dev zlib1g-dev python3 git wget cpio unzip
 
-      - name: Download Kernel Source ZIP
+      - name: Download Source & Toolchain
         run: |
-          echo "Mengunduh source code kernel via ZIP..."
+          echo "Mengunduh source code kernel..."
           wget -O kernel.zip https://github.com/1tovgar/kernel_xiaomi_agate/archive/refs/heads/agate-u-oss.zip
           unzip kernel.zip
           mv kernel_xiaomi_agate-agate-u-oss kernel_source
-          ls -la kernel_source
           
+          echo "Mengunduh toolchain compiler..."
+          git clone --depth=1 https://github.com/chenxiaolong/Toolchain.git toolchain
+
+      - name: Start Kernel Compilation
+        run: |
+          cd kernel_source
+          echo "Memulai proses kompilasi kernel Xiaomi 11T..."
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export PATH="$(pwd)/../toolchain/bin:$PATH"
+          
+          # Cek versi compiler
+          aarch64-linux-gnu-gcc --version
+          
+          # Konfigurasi dan Build
+          make O=out vendor/agate_defconfig
+          make -j$(nproc) O=out ARCH=arm64 CC=aarch64-linux-gnu-gcc
+          
+          echo "Tahap kompilasi awal berhasil dijalankan!"
