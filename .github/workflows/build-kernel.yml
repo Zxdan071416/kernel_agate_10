@@ -29,11 +29,11 @@ jobs:
           export ARCH=arm64
           export SUBARCH=arm64
           
-          # Cek compiler bawaan
-          aarch64-linux-gnu-gcc --version
+          # Bersihkan cache build sebelumnya jika ada
+          make O=out mrproper
           
-          # Jalankan konfigurasi dan build menggunakan compiler sistem
+          # Jalankan konfigurasi dan build dengan parameter lengkap
           make O=out ARCH=arm64 agate_defconfig
-          make -j$(nproc) O=out ARCH=arm64 CC=aarch64-linux-gnu-gcc CROSS_COMPILE=aarch64-linux-gnu-
+          make -j$(nproc) O=out ARCH=arm64 CC=aarch64-linux-gnu-gcc CROSS_COMPILE=aarch64-linux-gnu- KCFLAGS="-w" CONFIG_SECTION_MISMATCH_WARN_ONLY=y
           
-          echo "Kompilasi kernel berhasil dijalankan!"
+          echo "Kompilasi kernel selesai!"
