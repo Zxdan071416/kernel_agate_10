@@ -13,7 +13,7 @@ jobs:
       - name: Setup Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu bc bison flex libssl-dev libelf-dev zlib1g-dev libfdt-dev libselinux1-dev python3 git wget cpio clang lld
+          sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev zlib1g-dev libfdt-dev libselinux1-dev python3 git wget cpio clang lld llvm
 
       - name: Clone Kernel Source
         run: |
@@ -26,7 +26,7 @@ jobs:
           echo "Memastikan submodule ter-load..."
           git submodule update --init --recursive
           
-          # Bypass scripts host selinux
+          # Bypass scripts host selinux yang bermasalah
           echo "obj-y :=" > scripts/selinux/Makefile
           echo "subdir- :=" >> scripts/selinux/Makefile
           
@@ -36,7 +36,18 @@ jobs:
           
           make O=out ARCH=arm64 agate_defconfig
           
-          # Build dengan toleransi warning maksimal
-          make -j$(nproc) O=out ARCH=arm64 CC=clang AS=aarch64-linux-gnu-as LD=ld.lld AR=aarch64-linux-gnu-ar CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-gnu- HOSTCFLAGS="-w" HOST_EXTRACFLAGS="-w" KCFLAGS="-w -Wno-error" CONFIG_SECTION_MISMATCH_WARN_ONLY=y
+          # Gunakan bundel LLVM=1 standar Google/Android
+          make O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 CROSS_COMPILE=aarch64-linux-gnu- HOSTCFLAGS="-w" HOST_EXTRACFLAGS="-w" KCFLAGS="-w -Wno-error" CONFIG_SECTION_MISMATCH_WARN_ONLY=y -j$(nproc)
           
           echo "Kompilasi kernel selesai!"
+
+      - name: Check Output Kernel
+        run: |
+          cd kernel_source/out/arch/arm64/boot
+          ls -la
+
+      - name: Upload Kernel Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Image.gz-dtb-agate
+          path: kernel_source/out/arch/arm64/boot/Image*
