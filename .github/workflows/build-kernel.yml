@@ -15,20 +15,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential gcc g++ bc bison flex libssl-dev libelf-dev zlib1g-dev python3 git wget cpio unzip
 
-      - name: Download Source & Toolchain ZIP
+      - name: Download Source ZIP
         run: |
           echo "Mengunduh source code kernel..."
           wget -O kernel.zip https://github.com/1tovgar/kernel_xiaomi_agate/archive/refs/heads/agate-u-oss.zip
           unzip kernel.zip
           mv kernel_xiaomi_agate-agate-u-oss kernel_source
-          
-          echo "Mengunduh toolchain..."
-          wget -O toolchain.zip https://github.com/chenxiaolong/Toolchain/archive/refs/heads/main.zip
-          unzip toolchain.zip
-          mv Toolchain-main toolchain
 
-      - name: Find Defconfig Path
+      - name: Check Folder Structure
         run: |
           cd kernel_source
-          echo "Mencari file defconfig untuk perangkat agate..."
-          find arch/arm64/configs -name "*agate*" -o -name "*defconfig*"
+          echo "Menampilkan isi folder utama kernel:"
+          ls -la
+          echo "Mencari file defconfig di dalam folder arch:"
+          find arch/arm64/configs -maxdepth 3
