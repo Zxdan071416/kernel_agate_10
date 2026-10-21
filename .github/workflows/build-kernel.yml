@@ -33,7 +33,8 @@ jobs:
           echo "Memulai proses kompilasi kernel Xiaomi 11T..."
           export ARCH=arm64
           export SUBARCH=arm64
-          export PATH="$(pwd)/../toolchain/bin:$PATH"
+          # Mengarahkan PATH secara absolut ke folder bin toolchain
+          export PATH="$GITHUB_WORKSPACE/toolchain/bin:$PATH"
           
           # Cek versi compiler
           aarch64-linux-gnu-gcc --version
@@ -43,4 +44,3 @@ jobs:
           make -j$(nproc) O=out ARCH=arm64 CC=aarch64-linux-gnu-gcc
           
           echo "Tahap kompilasi awal berhasil dijalankan!"
-          
