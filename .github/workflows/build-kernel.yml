@@ -18,14 +18,14 @@ jobs:
       - name: Download Source & Toolchain ZIP
         run: |
           echo "Mengunduh source code kernel..."
-          wget --retry-connrefused --waitretry=1 --read-timeout=20 -O kernel.zip https://github.com/1tovgar/kernel_xiaomi_agate/archive/refs/heads/agate-u-oss.zip
+          wget -O kernel.zip https://github.com/1tovgar/kernel_xiaomi_agate/archive/refs/heads/agate-u-oss.zip
           unzip -q kernel.zip
           mv kernel_xiaomi_agate-agate-u-oss kernel_source
           
           echo "Mengunduh toolchain..."
-          wget --retry-connrefused --waitretry=1 --read-timeout=20 -O toolchain.zip https://github.com/chenxiaolong/Toolchain/archive/refs/heads/main.zip
+          wget -O toolchain.zip https://github.com/chenxiaolong/Toolchain/archive/refs/heads/master.zip
           unzip -q toolchain.zip
-          mv Toolchain-main toolchain
+          mv Toolchain-master toolchain
 
       - name: Start Kernel Compilation
         run: |
@@ -43,3 +43,4 @@ jobs:
           make -j$(nproc) O=out ARCH=arm64 CC=aarch64-linux-gnu-gcc
           
           echo "Kompilasi kernel berhasil dijalankan!"
+          
