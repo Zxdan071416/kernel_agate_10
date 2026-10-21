@@ -13,7 +13,7 @@ jobs:
       - name: Setup Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev zlib1g-dev python3 git wget cpio llvm clang lld
+          sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev zlib1g-dev libfdt-dev python3 git wget cpio llvm clang lld
 
       - name: Clone Kernel Source (Recursive)
         run: |
@@ -27,7 +27,6 @@ jobs:
           export ARCH=arm64
           export SUBARCH=arm64
           
-          # Konfigurasi dan build dengan tambahan flag penanganan OpenSSL
           make O=out ARCH=arm64 agate_defconfig
           make -j$(nproc) O=out ARCH=arm64 CC=clang LD=ld.lld CLANG_TRIPLE=aarch64-linux-gnu- HOST_EXTRACFLAGS="-Wno-error=deprecated-declarations" KCFLAGS="-w" CONFIG_SECTION_MISMATCH_WARN_ONLY=y
           
